@@ -14,37 +14,31 @@
 // Parsing function definitions
 
 void parse_request_buffer(struct request *request, char *request_buffer) {
-    int i, offset;
+    int read_state, write_offset; // read_state can be 0, 1, 2 depending on which part of the request is being read
+    char *current_ptr;
 
     // Read method
-    for (i = 0; i < strlen(request_buffer); i++) {
+    read_state = 0; write_offset = 0;
+    current_ptr = request->method;
+    for (int i = 0; i < strlen(request_buffer); i++) {
         if (request_buffer[i] == ' ') {
-            request->method[i] = '\0';
-            break;
+            current_ptr[i - write_offset] = '\0';
+            write_offset = i + 1;
+            switch (read_state) {
+                case 0:
+                    current_ptr = request->path;
+                    read_state = 1;
+                    break;
+                case 1:
+                    current_ptr = request->protocol_version;
+                    read_state = 2;
+                    break;
+                default:
+                    return;
+            }
+            continue;
         }
-        request->method[i] = request_buffer[i];
-    }
-
-    // Read path (Index stays the same from the last for-loop run)
-    i++;
-    offset = i;
-    for (; i < strlen(request_buffer); i++) {
-        if (request_buffer[i] == ' ') {
-            request->path[i - offset] = '\0';
-            break;
-        }
-        request->path[i - offset] = request_buffer[i];
-    }
-
-    // Read protocol version
-    i++;
-    offset = i;
-    for (; i < strlen(request_buffer); i++) {
-        if (request_buffer[i] == '\r') {
-            request->protocol_version[i - offset] = '\0';
-            break;
-        }
-        request->protocol_version[i - offset] = request_buffer[i];
+        current_ptr[i - write_offset] = request_buffer[i];
     }
 }
 
