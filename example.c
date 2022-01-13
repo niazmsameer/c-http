@@ -14,7 +14,7 @@ int main() {
         return instance_setup_result;
     }
 
-    setup_request_handler(&instance, &request_handler);
+    instance.request_handler = &request_handler;
 
     start_server(&instance);
 }

@@ -29,11 +29,11 @@ struct c_http_instance {
     void (*request_handler)(struct request *request);
 };
 
-void parse_request_buffer(struct request *request, char* request_buffer);
+void parse_request_buffer_first_line(struct request *request, char* request_buffer);
+
+void handle_next_request(struct c_http_instance *instance);
 
 int setup_instance(struct c_http_instance* instance, int port);
-
-void setup_request_handler(struct c_http_instance* instance, void (*handler)(struct request *request));
 
 _Noreturn void start_server(struct c_http_instance* instance);
 
